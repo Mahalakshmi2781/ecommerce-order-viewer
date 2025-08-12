@@ -1,0 +1,167 @@
+
+            font-family: Arial, sans-serif;
+            background: #f4f7f8;
+            padding: 30px;
+            color: #333;
+        }
+
+        h2 {
+            color: #2c3e50;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+            border: 2px solid #3498db;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #2980b9;
+        }
+
+        button {
+            padding: 10px 18px;
+            font-size: 16px;
+            background-color: #3498db;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        tr:hover {
+            background-color: #f1f9ff;
+        }
+
+        #resultsBody td[colspan] {
+            text-align: center;
+            font-style: italic;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h2>Search Users</h2>
+    <input type="text" id="searchInput" placeholder="Enter name or email" />
+    <button onclick="searchUsers()">Search</button>
+
+    <h3>Results:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody id="resultsBody">
+        <script>
+let selectedUserId = null;
+let selectedOrderId = null;
+
+function searchUsers() {
+    // ...existing code to fetch and show users...
+
+    // Add click handler to each user row:
+    data.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.first_name}</td>
+            <td>${user.last_name}</td>
+            <td>${user.email}</td>
+        `;
+        row.style.cursor = 'pointer';
+        row.onclick = () => {
+            selectedUserId = user.id;
+            fetchOrders(user.id);
+        };
+        tbody.appendChild(row);
+    });
+}
+
+function fetchOrders(userId) {
+    fetch(`http://127.0.0.1:5000/users/${userId}/orders`)
+    .then(response => response.json())
+    .then(orders => {
+        // Display orders in a new table or section
+        const ordersDiv = document.getElementById('ordersSection');
+        ordersDiv.innerHTML = '<h3>User Orders</h3>';
+        if (orders.length === 0) {
+            ordersDiv.innerHTML += '<p>No orders found.</p>';
+            return;
+        }
+
+        let html = '<table border="1"><tr><th>Order ID</th><th>Date</th><th>Status</th><th>Actions</th></tr>';
+        orders.forEach(order => {
+            html += `<tr>
+                <td>${order.id}</td>
+                <td>${order.order_date}</td>
+                <td>${order.status}</td>
+                <td><button onclick="fetchOrderItems(${order.id})">View Items</button></td>
+            </tr>`;
+        });
+        html += '</table>';
+        ordersDiv.innerHTML += html;
+
+        // Clear previous items display
+        document.getElementById('itemsSection').innerHTML = '';
+    });
+}
+
+function fetchOrderItems(orderId) {
+    fetch(`http://127.0.0.1:5000/orders/${orderId}/items`)
+    .then(response => response.json())
+    .then(items => {
+        const itemsDiv = document.getElementById('itemsSection');
+        itemsDiv.innerHTML = '<h3>Order Items</h3>';
+        if (items.length === 0) {
+            itemsDiv.innerHTML += '<p>No items found in this order.</p>';
+            return;
+        }
+
+        let html = '<table border="1"><tr><th>Product Name</th><th>Quantity</th><th>Price</th></tr>';
+        items.forEach(item => {
+            html += `<tr>
+                <td>${item.product_name}</td>
+                <td>${item.quantity}</td>
+                <td>${item.price}</td>
+            </tr>`;
+        });
+        html += '</table>';
+        itemsDiv.innerHTML += html;
+    });
+}
+        </script>
